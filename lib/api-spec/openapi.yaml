@@ -24,6 +24,35 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /inspection-requests:
+    post:
+      operationId: createInspectionRequest
+      tags: [inspection-requests]
+      summary: Create an inspection request
+      description: Stores a new waterproofing inspection lead.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/InspectionRequestInput"
+      responses:
+        "201":
+          description: Inspection request created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InspectionRequest"
+        "400":
+          description: Invalid inspection request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                required: [error]
 components:
   schemas:
     HealthStatus:
@@ -33,4 +62,47 @@ components:
           type: string
       required:
         - status
+    InspectionRequestInput:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+        phone:
+          type: string
+          minLength: 7
+        service:
+          type: string
+          minLength: 1
+        message:
+          type: string
+          minLength: 1
+      required:
+        - name
+        - phone
+        - service
+        - message
+    InspectionRequest:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        phone:
+          type: string
+        service:
+          type: string
+        message:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - name
+        - phone
+        - service
+        - message
+        - createdAt
 

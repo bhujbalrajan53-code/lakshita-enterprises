@@ -1,5 +1,6 @@
 import { useEffect, useState, type FormEvent, type ReactNode } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { useCreateInspectionRequest } from '@workspace/api-client-react';
 import {
   ArrowDownRight,
   ArrowUpRight,
@@ -177,6 +178,8 @@ function Home() {
   const [openFaq, setOpenFaq] = useState<number | null>(0);
   const [activeService, setActiveService] = useState(0);
   const [submitted, setSubmitted] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const createInspectionRequest = useCreateInspectionRequest();
 
   useEffect(() => {
     document.title = 'Lakshita Enterprises | Waterproofing built to last';
@@ -207,8 +210,31 @@ function Home() {
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    setSubmitted(true);
-    event.currentTarget.reset();
+    const form = event.currentTarget;
+    const formData = new FormData(form);
+    setSubmitError(null);
+
+    createInspectionRequest.mutate(
+      {
+        data: {
+          name: String(formData.get('name') ?? '').trim(),
+          phone: String(formData.get('phone') ?? '').trim(),
+          service: String(formData.get('service') ?? '').trim(),
+          message: String(formData.get('message') ?? '').trim(),
+        },
+      },
+      {
+        onSuccess: () => {
+          setSubmitted(true);
+          form.reset();
+        },
+        onError: () => {
+          setSubmitError(
+            'We couldn’t send your request right now. Please try again or call us directly.',
+          );
+        },
+      },
+    );
   };
 
   return (
@@ -480,7 +506,8 @@ function Home() {
                   </div>
                   <label className="block"><span className="mb-2 block font-mono-custom text-[.6rem] uppercase tracking-[.15em] text-[hsl(var(--muted-foreground))]">I need help with</span><select required name="service" defaultValue="" className="w-full border-b border-[hsl(var(--foreground)/.22)] bg-transparent py-3 text-sm outline-none focus:border-[hsl(var(--primary))]" data-testid="select-service"><option value="" disabled>Select an area</option><option>Terrace or roof</option><option>Bathroom or wet area</option><option>Basement</option><option>External wall</option><option>New construction</option><option>Not sure yet</option></select></label>
                   <label className="block"><span className="mb-2 block font-mono-custom text-[.6rem] uppercase tracking-[.15em] text-[hsl(var(--muted-foreground))]">A little about the issue</span><textarea required name="message" rows={3} placeholder="When did you first notice it?" className="w-full resize-none border-b border-[hsl(var(--foreground)/.22)] bg-transparent py-3 text-sm outline-none placeholder:text-[hsl(var(--muted-foreground)/.7)] focus:border-[hsl(var(--primary))]" data-testid="textarea-message" /></label>
-                  <div className="flex flex-col justify-between gap-5 pt-3 sm:flex-row sm:items-center"><p className="flex items-center gap-2 text-[.68rem] leading-5 text-[hsl(var(--muted-foreground))]"><CalendarDays size={15} className="text-[hsl(var(--primary))]" /> No obligation. Just a useful first conversation.</p><button type="submit" className="group inline-flex items-center justify-center gap-3 rounded-full bg-[hsl(var(--primary))] px-6 py-4 text-sm font-bold text-[hsl(var(--primary-foreground))] transition-transform hover:-translate-y-1" data-testid="button-submit-inspection">Request inspection <Send size={16} className="transition-transform group-hover:translate-x-1" /></button></div>
+                  {submitError && <p role="alert" className="text-sm font-semibold text-red-700">{submitError}</p>}
+                  <div className="flex flex-col justify-between gap-5 pt-3 sm:flex-row sm:items-center"><p className="flex items-center gap-2 text-[.68rem] leading-5 text-[hsl(var(--muted-foreground))]"><CalendarDays size={15} className="text-[hsl(var(--primary))]" /> No obligation. Just a useful first conversation.</p><button type="submit" disabled={createInspectionRequest.isPending} className="group inline-flex items-center justify-center gap-3 rounded-full bg-[hsl(var(--primary))] px-6 py-4 text-sm font-bold text-[hsl(var(--primary-foreground))] transition-transform hover:-translate-y-1 disabled:cursor-wait disabled:opacity-60" data-testid="button-submit-inspection">{createInspectionRequest.isPending ? 'Sending request…' : 'Request inspection'} <Send size={16} className="transition-transform group-hover:translate-x-1" /></button></div>
                 </form>
               )}
             </div>
