@@ -9,3 +9,7 @@ A responsive waterproofing business website for Lakshita Enterprises.
 `pnpm --filter @workspace/lakshita-enterprises run dev`
 
 The site is in `artifacts/lakshita-enterprises`.
+
+## Live website
+
+[Visit Lakshita Enterprises](https://lakshita-enterprises--bhujbalrajan53.replit.app)
